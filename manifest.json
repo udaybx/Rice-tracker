@@ -1,0 +1,14 @@
+{
+  "name": "Rice Shop Ledger",
+  "short_name": "Rice Ledger",
+  "description": "Private stock and profit tracker for rice bag sales",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F7F1E3",
+  "theme_color": "#5E3D1F",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

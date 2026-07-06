@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Rice Shop Ledger</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#5E3D1F">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#F7F1E3; --card:#FFFFFF; --jute:#8B5E34; --juteDark:#5E3D1F;
+    --wheat:#C99A3C; --ink:#2E2416; --sub:#8A7A63; --profit:#3F6B4A;
+    --loss:#A5423A; --line:#E7DCC5;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); font-family:system-ui,-apple-system,sans-serif; color:var(--ink); padding-bottom:40px;}
+  .header{background:var(--juteDark); padding:20px 16px 24px; position:relative; overflow:hidden;}
+  .header::after{content:""; position:absolute; right:-20px; top:-20px; width:140px; height:140px; border-radius:50%; background:rgba(201,154,60,0.15);}
+  .eyebrow{font-size:11px; letter-spacing:2px; color:var(--wheat); font-weight:700; text-transform:uppercase;}
+  .title{font-size:26px; font-weight:800; color:#FBF6EA; margin-top:4px;}
+  .content{padding:16px;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;}
+  .card{background:var(--card); border-radius:14px; padding:14px; border:1px solid var(--line);}
+  .label{font-size:11px; color:var(--sub); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;}
+  .value{font-size:18px; font-weight:800; margin-top:4px;}
+  .value.big{font-size:22px;}
+  .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .section-title h3{font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.8px; color:var(--juteDark); margin:0;}
+  .pill-btn{font-size:12px; font-weight:700; color:var(--jute); background:#F0E4CC; border:none; border-radius:20px; padding:6px 12px; cursor:pointer;}
+  .size-card{background:var(--card); border-radius:14px; padding:14px; border:1px solid var(--line); margin-bottom:8px;}
+  .size-row-top{display:flex; justify-content:space-between; align-items:center;}
+  .size-label{font-weight:800; font-size:16px;}
+  .profit-tag{font-size:12px; font-weight:700;}
+  .price-row{display:flex; gap:16px; margin-top:8px; font-size:13px; color:var(--sub);}
+  .price-edit-row{display:flex; gap:8px; margin-top:10px;}
+  .price-input-wrap{flex:1;}
+  .price-input-wrap .plabel{font-size:11px; color:var(--sub); margin-bottom:4px;}
+  .stat-row{display:flex; justify-content:space-between; margin-top:10px; padding-top:10px; border-top:1px dashed var(--line);}
+  .mini-stat{text-align:center;}
+  .mini-stat .mlabel{font-size:11px; color:var(--sub);}
+  .mini-stat .mvalue{font-size:15px; font-weight:700;}
+  input, select{
+    flex:1; padding:10px 12px; border-radius:8px; border:1px solid var(--line);
+    font-size:14px; color:var(--ink); background:#FDFBF6; outline:none; width:100%;
+  }
+  .form-row{display:flex; gap:8px; margin-bottom:10px;}
+  .save-btn{width:100%; padding:12px 0; background:var(--jute); color:#fff; border:none; border-radius:10px; font-weight:700; font-size:15px; cursor:pointer;}
+  .err{color:var(--loss); font-size:13px; margin-bottom:8px;}
+  .empty-msg{color:var(--sub); font-size:14px; padding:12px 0;}
+  .day-group{margin-bottom:12px;}
+  .day-header{display:flex; justify-content:space-between; font-size:13px; color:var(--sub); margin-bottom:6px; font-weight:600;}
+  .day-header .profit{color:var(--profit);}
+  .entry-row{display:flex; justify-content:space-between; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px 12px; margin-bottom:6px;}
+  .entry-left{font-size:14px;}
+  .entry-right{display:flex; align-items:center; gap:10px;}
+  .entry-profit{font-size:13px; color:var(--sub);}
+  .del-btn{border:none; background:none; color:var(--loss); cursor:pointer; font-size:13px;}
+  .tabs-hint{text-align:center; font-size:12px; color:var(--sub); padding:16px 16px 0;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Private · Only You · Offline</div>
+  <div class="title">🌾 Rice Shop Ledger</div>
+</div>
+
+<div class="content">
+  <div class="grid2">
+    <div class="card"><div class="label">Total Profit</div><div class="value big" id="sumProfit" style="color:var(--profit)">₹0</div></div>
+    <div class="card"><div class="label">Bags Sold</div><div class="value" id="sumBags" style="color:var(--jute)">0</div></div>
+    <div class="card"><div class="label">Revenue</div><div class="value" id="sumRevenue">₹0</div></div>
+    <div class="card"><div class="label">Cost</div><div class="value" id="sumCost" style="color:var(--sub)">₹0</div></div>
+  </div>
+
+  <div class="section-title">
+    <h3>Stock by bag size</h3>
+    <button class="pill-btn" id="editPricesBtn">Edit prices</button>
+  </div>
+  <div id="sizesList"></div>
+
+  <div class="section-title"><h3>Add entry</h3></div>
+  <div class="card" style="margin-bottom:20px;">
+    <div class="form-row">
+      <input type="date" id="entryDate">
+      <select id="entrySize"></select>
+    </div>
+    <div class="form-row">
+      <input type="number" id="entrySold" placeholder="Bags sold">
+      <input type="number" id="entryReceived" placeholder="Bags received (optional)">
+    </div>
+    <div class="err" id="entryErr" style="display:none;"></div>
+    <button class="save-btn" id="saveEntryBtn">Save entry</button>
+  </div>
+
+  <div class="section-title"><h3>Daily log</h3></div>
+  <div id="dailyLog"></div>
+</div>
+
+<script>
+// ---------- Storage helpers (localStorage, fully offline) ----------
+const CONFIG_KEY = "rice-config-offline";
+const ENTRIES_KEY = "rice-entries-offline";
+
+function loadConfig(){
+  const raw = localStorage.getItem(CONFIG_KEY);
+  if(raw){ try { return JSON.parse(raw); } catch(e){} }
+  return {
+    sizes: [
+      { id:"1kg", label:"1kg", cost:98, sell:120 },
+      { id:"5kg", label:"5kg", cost:440, sell:590 },
+      { id:"10kg", label:"10kg", cost:880, sell:1200 },
+      { id:"26kg", label:"26kg", cost:2080, sell:2800 },
+    ],
+    stockIn: {}
+  };
+}
+function saveConfig(cfg){ localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg)); }
+function loadEntries(){
+  const raw = localStorage.getItem(ENTRIES_KEY);
+  if(raw){ try { return JSON.parse(raw); } catch(e){} }
+  return [];
+}
+function saveEntries(entries){ localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries)); }
+
+function fmt(n){ return "₹" + Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:0}); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+let config = loadConfig();
+let entries = loadEntries();
+let editingPrices = false;
+
+function totalReceived(sizeId){ return Number(config.stockIn[sizeId] || 0); }
+function totalSold(sizeId){ return entries.filter(e=>e.sizeId===sizeId).reduce((s,e)=>s+Number(e.sold),0); }
+function remaining(sizeId){ return totalReceived(sizeId) - totalSold(sizeId); }
+function sizeById(id){ return config.sizes.find(s=>s.id===id) || {}; }
+
+function render(){
+  // summary
+  let revenue=0, cost=0, profit=0, bags=0;
+  config.sizes.forEach(s=>{
+    const sold = totalSold(s.id);
+    revenue += sold*s.sell;
+    cost += sold*s.cost;
+    profit += sold*(s.sell-s.cost);
+    bags += sold;
+  });
+  document.getElementById("sumProfit").textContent = fmt(profit);
+  document.getElementById("sumBags").textContent = bags;
+  document.getElementById("sumRevenue").textContent = fmt(revenue);
+  document.getElementById("sumCost").textContent = fmt(cost);
+
+  // sizes list
+  const sizesList = document.getElementById("sizesList");
+  sizesList.innerHTML = "";
+  config.sizes.forEach(s=>{
+    const sold = totalSold(s.id);
+    const rem = remaining(s.id);
+    const perBag = s.sell - s.cost;
+    const div = document.createElement("div");
+    div.className = "size-card";
+    div.innerHTML = `
+      <div class="size-row-top">
+        <div class="size-label">${s.label} bag</div>
+        <div class="profit-tag" style="color:${perBag>=0?'var(--profit)':'var(--loss)'}">${perBag>=0?'+':''}${fmt(perBag)}/bag</div>
+      </div>
+      ${editingPrices ? `
+        <div class="price-edit-row">
+          <div class="price-input-wrap"><div class="plabel">Cost ₹</div><input type="number" value="${s.cost}" data-size="${s.id}" data-field="cost" class="priceInput"></div>
+          <div class="price-input-wrap"><div class="plabel">Sell ₹</div><input type="number" value="${s.sell}" data-size="${s.id}" data-field="sell" class="priceInput"></div>
+        </div>
+      ` : `
+        <div class="price-row"><span>Cost ${fmt(s.cost)}</span><span>Sell ${fmt(s.sell)}</span></div>
+      `}
+      <div class="stat-row">
+        <div class="mini-stat"><div class="mlabel">Received</div><div class="mvalue">${totalReceived(s.id)}</div></div>
+        <div class="mini-stat"><div class="mlabel">Sold</div><div class="mvalue">${sold}</div></div>
+        <div class="mini-stat"><div class="mlabel">Remaining</div><div class="mvalue" style="color:${rem<0?'var(--loss)':'var(--ink)'}">${rem}</div></div>
+      </div>
+    `;
+    sizesList.appendChild(div);
+  });
+
+  document.querySelectorAll(".priceInput").forEach(inp=>{
+    inp.addEventListener("change", (e)=>{
+      const sizeId = e.target.dataset.size;
+      const field = e.target.dataset.field;
+      config.sizes = config.sizes.map(s=> s.id===sizeId ? {...s, [field]: Number(e.target.value||0)} : s);
+      saveConfig(config);
+      render();
+    });
+  });
+
+  // size select in form
+  const entrySizeSel = document.getElementById("entrySize");
+  const prevVal = entrySizeSel.value;
+  entrySizeSel.innerHTML = config.sizes.map(s=>`<option value="${s.id}">${s.label}</option>`).join("");
+  if(prevVal) entrySizeSel.value = prevVal;
+
+  // daily log
+  const byDate = {};
+  entries.forEach(e=>{
+    if(!byDate[e.date]) byDate[e.date] = [];
+    byDate[e.date].push(e);
+  });
+  const dates = Object.keys(byDate).sort((a,b)=> b.localeCompare(a));
+  const logDiv = document.getElementById("dailyLog");
+  logDiv.innerHTML = "";
+  if(dates.length===0){
+    logDiv.innerHTML = `<div class="empty-msg">No entries yet. Add your first sale above.</div>`;
+  } else {
+    dates.forEach(date=>{
+      const dayEntries = byDate[date];
+      const dayProfit = dayEntries.reduce((sum,e)=>{
+        const s = sizeById(e.sizeId);
+        return sum + e.sold*((s.sell||0)-(s.cost||0));
+      },0);
+      const group = document.createElement("div");
+      group.className = "day-group";
+      const dateLabel = new Date(date).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+      let rowsHtml = "";
+      dayEntries.forEach(e=>{
+        const s = sizeById(e.sizeId);
+        const entryProfit = e.sold*((s.sell||0)-(s.cost||0));
+        rowsHtml += `
+          <div class="entry-row">
+            <div class="entry-left">${s.label} × ${e.sold} bags</div>
+            <div class="entry-right">
+              <div class="entry-profit">${fmt(entryProfit)}</div>
+              <button class="del-btn" data-id="${e.id}">✕</button>
+            </div>
+          </div>
+        `;
+      });
+      group.innerHTML = `
+        <div class="day-header"><span>${dateLabel}</span><span class="profit">${fmt(dayProfit)} profit</span></div>
+        ${rowsHtml}
+      `;
+      logDiv.appendChild(group);
+    });
+    logDiv.querySelectorAll(".del-btn").forEach(btn=>{
+      btn.addEventListener("click", (e)=>{
+        const id = e.target.dataset.id;
+        entries = entries.filter(en=>en.id!==id);
+        saveEntries(entries);
+        render();
+      });
+    });
+  }
+}
+
+document.getElementById("editPricesBtn").addEventListener("click", ()=>{
+  editingPrices = !editingPrices;
+  document.getElementById("editPricesBtn").textContent = editingPrices ? "Done" : "Edit prices";
+  render();
+});
+
+document.getElementById("entryDate").value = todayStr();
+
+document.getElementById("saveEntryBtn").addEventListener("click", ()=>{
+  const errDiv = document.getElementById("entryErr");
+  errDiv.style.display = "none";
+  const date = document.getElementById("entryDate").value;
+  const sizeId = document.getElementById("entrySize").value;
+  const sold = Number(document.getElementById("entrySold").value || 0);
+  const received = Number(document.getElementById("entryReceived").value || 0);
+
+  if(!date){ errDiv.textContent="Pick a date"; errDiv.style.display="block"; return; }
+  if(sold<=0 && received<=0){ errDiv.textContent="Enter bags sold and/or received"; errDiv.style.display="block"; return; }
+
+  if(received>0){
+    config.stockIn[sizeId] = Number(config.stockIn[sizeId]||0) + received;
+    saveConfig(config);
+  }
+  if(sold>0){
+    entries.unshift({ id: Date.now().toString(), date, sizeId, sold });
+    saveEntries(entries);
+  }
+  document.getElementById("entrySold").value = "";
+  document.getElementById("entryReceived").value = "";
+  render();
+});
+
+render();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
